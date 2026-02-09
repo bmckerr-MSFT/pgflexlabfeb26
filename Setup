@@ -1,0 +1,6 @@
+# Install extensions
+
+CREATE EXTENSION IF NOT EXISTS azure_ai;
+CREATE EXTENSION IF NOT EXISTS vector;
+
+SHOW azure.extensions;

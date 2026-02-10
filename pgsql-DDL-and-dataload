@@ -1,3 +1,6 @@
+set search_path TO schema$$$$, public;
+show search_path;
+
 -- Description: This script creates the tables and loads the data into the tables.
 -- It creates a table to store the cases data and loads the data from the cases.csv file into the table.
 

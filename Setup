@@ -4,3 +4,14 @@ CREATE EXTENSION IF NOT EXISTS azure_ai;
 CREATE EXTENSION IF NOT EXISTS vector;
 
 SHOW azure.extensions;
+
+# Setup integration with Azure OpenAI
+SELECT azure_ai.set_setting('azure_openai.endpoint', 'https://flexlabfeb26.openai.azure.com/');
+SELECT azure_ai.set_setting('azure_openai.auth_type', 'managed-identity');
+
+SELECT azure_ai.get_setting('azure_openai.endpoint');
+SELECT azure_ai.get_setting('azure_openai.auth_type');
+
+# Test embedding function
+SELECT azure_openai.create_embeddings('text-embedding-ada-002', 'Your text here');
+

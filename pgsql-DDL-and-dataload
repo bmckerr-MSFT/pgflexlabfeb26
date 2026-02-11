@@ -1,11 +1,11 @@
 1. Ensure search_path is correct
-========
+===================================================================
 set search_path TO schema$$$$, public;
 show search_path;
 
 
 2. -- Create a table to store the cases data
-========
+===================================================================
 CREATE TABLE cases(
         id SERIAL PRIMARY KEY,
         name TEXT,
@@ -15,43 +15,56 @@ CREATE TABLE cases(
     );
 
 
-
 3. Populate with data
-=========
+===================================================================
 insert into cases select * from public.cases;
 
 
 4. Text query
-=========
+===================================================================
 SELECT id, name, opinion
 FROM cases
 WHERE opinion ILIKE '%Water leaking into the apartment from the floor above%';
 
+
 5. Add vector column
-=========
+===================================================================
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS opinions_vector vector(1536);
 
+
 6. Generate embeddings (vectors)
-=========
-UPDATE cases
+===================================================================
+WITH batch AS (
+  SELECT id
+  FROM cases
+  WHERE opinions_vector IS NULL
+  ORDER BY id
+  LIMIT 10
+  FOR UPDATE SKIP LOCKED
+)
+UPDATE cases c
 SET opinions_vector = azure_openai.create_embeddings(
-    'text-embedding-3-small',
-    name || LEFT(opinion, 8000),
+    'text-embedding-ada-002',
+    c.name || LEFT(c.opinion, 8000),
     max_attempts => 5,
     retry_delay_ms => 500
-)::vector
-WHERE opinions_vector IS NULL;
+  )::vector
+FROM batch
+WHERE c.id = batch.id;
+
 
 7. Add DISKANN index
-=========
+===================================================================
 CREATE INDEX IF NOT EXISTS cases_cosine_diskann ON cases USING diskann(opinions_vector vector_cosine_ops);
 
+
 8. View an embedding
-=========
+===================================================================
 SELECT opinions_vector FROM cases LIMIT 1;
 
+
 9. Embedding Cosine search - top 10 
-=========
+===================================================================
 SELECT id, name
 FROM cases
 ORDER BY opinions_vector <=> azure_openai.create_embeddings(
@@ -60,8 +73,9 @@ ORDER BY opinions_vector <=> azure_openai.create_embeddings(
 )::vector
 LIMIT 10;
 
+
 10. Just the top match
-=========
+===================================================================
 SELECT id, opinion
 FROM cases
 ORDER BY opinions_vector <=> azure_openai.create_embeddings(
@@ -70,8 +84,10 @@ ORDER BY opinions_vector <=> azure_openai.create_embeddings(
 )::vector
 LIMIT 1;
 
+
+
 REF : 
-=========
+===================================================================
 https://github.com/jjfrost/pg-af-agents-lab/tree/main
 
 

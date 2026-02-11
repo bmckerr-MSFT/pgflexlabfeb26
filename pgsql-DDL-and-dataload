@@ -60,7 +60,7 @@ CREATE INDEX IF NOT EXISTS cases_cosine_diskann ON cases USING diskann(opinions_
 
 8. View an embedding
 ===================================================================
-SELECT opinions_vector FROM cases LIMIT 1;
+SELECT opinions_vector FROM cases where opinions_vector IS NOT NULL LIMIT 1;
 
 
 9. Embedding Cosine search - top 10 
@@ -68,7 +68,7 @@ SELECT opinions_vector FROM cases LIMIT 1;
 SELECT id, name
 FROM cases
 ORDER BY opinions_vector <=> azure_openai.create_embeddings(
-    'text-embedding-3-small',
+    'text-embedding-ada-002',
     'Water leaking into the apartment from the floor above.'
 )::vector
 LIMIT 10;
@@ -79,7 +79,7 @@ LIMIT 10;
 SELECT id, opinion
 FROM cases
 ORDER BY opinions_vector <=> azure_openai.create_embeddings(
-    'text-embedding-3-small',
+    'text-embedding-ada-002',
     'Water leaking into the apartment from the floor above.'
 )::vector
 LIMIT 1;

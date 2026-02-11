@@ -1,5 +1,10 @@
+1. Ensure search_path is correct
+========
+set search_path TO schema$$$$, public;
+show search_path;
 
-0. -- Create a table to store the cases data
+
+2. -- Create a table to store the cases data
 ========
 CREATE TABLE cases(
         id SERIAL PRIMARY KEY,
@@ -11,22 +16,22 @@ CREATE TABLE cases(
 
 
 
-1. Populate with data
+3. Populate with data
 =========
 insert into cases select * from public.cases;
 
 
-2. Text query
+4. Text query
 =========
 SELECT id, name, opinion
 FROM cases
 WHERE opinion ILIKE '%Water leaking into the apartment from the floor above%';
 
-3. Add vector column
+5. Add vector column
 =========
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS opinions_vector vector(1536);
 
-4. Generate embeddings (vectors)
+6. Generate embeddings (vectors)
 =========
 UPDATE cases
 SET opinions_vector = azure_openai.create_embeddings(
@@ -37,15 +42,15 @@ SET opinions_vector = azure_openai.create_embeddings(
 )::vector
 WHERE opinions_vector IS NULL;
 
-5. Add DISKANN index
+7. Add DISKANN index
 =========
 CREATE INDEX IF NOT EXISTS cases_cosine_diskann ON cases USING diskann(opinions_vector vector_cosine_ops);
 
-6.View an embedding
+8. View an embedding
 =========
 SELECT opinions_vector FROM cases LIMIT 1;
 
-7. Embedding Cosine search - top 10 
+9. Embedding Cosine search - top 10 
 =========
 SELECT id, name
 FROM cases
@@ -55,7 +60,7 @@ ORDER BY opinions_vector <=> azure_openai.create_embeddings(
 )::vector
 LIMIT 10;
 
-8. Just the top match
+10. Just the top match
 =========
 SELECT id, opinion
 FROM cases
@@ -68,6 +73,8 @@ LIMIT 1;
 REF : 
 =========
 https://github.com/jjfrost/pg-af-agents-lab/tree/main
+
+
 
 
 

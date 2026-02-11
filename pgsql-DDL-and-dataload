@@ -1,19 +1,32 @@
-1.
+
+0. -- Create a table to store the cases data
+========
+CREATE TABLE cases(
+        id SERIAL PRIMARY KEY,
+        name TEXT,
+        decision_date DATE,
+        court_id INT,
+        opinion TEXT
+    );
+
+
+
+1. Populate with data
 =========
 insert into cases select * from public.cases;
 
 
-2.
+2. Text query
 =========
 SELECT id, name, opinion
 FROM cases
 WHERE opinion ILIKE '%Water leaking into the apartment from the floor above%';
 
-3.
+3. Add vector column
 =========
 ALTER TABLE cases ADD COLUMN IF NOT EXISTS opinions_vector vector(1536);
 
-4.
+4. Generate embeddings (vectors)
 =========
 UPDATE cases
 SET opinions_vector = azure_openai.create_embeddings(
@@ -24,16 +37,15 @@ SET opinions_vector = azure_openai.create_embeddings(
 )::vector
 WHERE opinions_vector IS NULL;
 
-5.
+5. Add DISKANN index
 =========
-CREATE EXTENSION IF NOT EXISTS pg_diskann;
 CREATE INDEX IF NOT EXISTS cases_cosine_diskann ON cases USING diskann(opinions_vector vector_cosine_ops);
 
-6.
+6.View an embedding
 =========
 SELECT opinions_vector FROM cases LIMIT 1;
 
-7.
+7. Embedding Cosine search - top 10 
 =========
 SELECT id, name
 FROM cases
@@ -43,7 +55,7 @@ ORDER BY opinions_vector <=> azure_openai.create_embeddings(
 )::vector
 LIMIT 10;
 
-8.
+8. Just the top match
 =========
 SELECT id, opinion
 FROM cases

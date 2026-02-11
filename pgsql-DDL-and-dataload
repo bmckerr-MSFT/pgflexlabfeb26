@@ -1,3 +1,7 @@
+Ref : https://github.com/jjfrost/pg-af-agents-lab/blob/main/Docs/lab_manual.md
+
+==============================
+
 set search_path TO schema$$$$, public;
 show search_path;
 
@@ -32,3 +36,12 @@ SELECT
         (data#>>'{court,id}')::int AS court_id, 
         array_to_string(ARRAY(SELECT jsonb_path_query(data, '$.casebody.opinions[*].text')), ', ') AS opinion
 FROM temp_cases;
+
+
+=========
+
+insert into cases select * from public.cases;
+
+
+
+

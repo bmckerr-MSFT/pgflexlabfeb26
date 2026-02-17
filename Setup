@@ -58,3 +58,17 @@ FROM temp_cases;
 
 
 grant select on public.cases to public;
+
+
+Cleanup
+=======
+
+DO $$
+DECLARE
+  i int;
+BEGIN
+  FOR i IN 1..20 LOOP
+    EXECUTE format('DROP TABLE IF EXISTS %I.%I CASCADE', 'schema'||i, 'cases');
+  END LOOP;
+END $$;
+
